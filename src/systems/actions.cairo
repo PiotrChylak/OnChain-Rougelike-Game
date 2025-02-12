@@ -1,6 +1,6 @@
-use dojo_starter::models::{Direction, Position, GridModel};
-use origami_map::map::MapTrait;
+use dojo_starter::models::{Direction, Position};
 use origami_map::map::Map;
+use origami_map::generators::mazer::Mazer;
 
 // define the interface
 #[starknet::interface]
@@ -9,15 +9,15 @@ trait IActions<T> {
     fn move(ref self: T, direction: Direction);
     fn flash(ref self: T, direction: Direction);
     fn teleport(ref self: T, x_value: u32, y_value: u32);
-    fn generate_grid(ref self: T, width: u8, height: u8);
+    fn generate_maze(ref self: T);
 }
 
 // dojo decorator
 #[dojo::contract]
 pub mod actions {
-    use super::{IActions, Direction, Position, NextPosition, FlashPosition, TeleportPosition, GenerateGrid};
+    use super::{IActions, Direction, Position, NextPosition, FlashPosition, TeleportPosition, GenerateMaze};
     use starknet::{ContractAddress, get_caller_address};
-    use dojo_starter::models::{Vec2, Moves, DirectionsAvailable};
+    use dojo_starter::models::{Vec2, Moves, DirectionsAvailable, MazeModel};
 
     use dojo::model::{ModelStorage, ModelValueStorage};
     use dojo::event::EventStorage;
@@ -32,11 +32,13 @@ pub mod actions {
 
     #[abi(embed_v0)]
     impl ActionsImpl of IActions<ContractState> {
-        fn generate_grid(ref self: ContractState, width: u8, height: u8){
+        fn generate_maze(ref self: ContractState){
             let mut world = self.world_default();
-            let map = GenerateGrid(width, height);
+            let id = 1;
+            let maze = GenerateMaze();
+            let new_maze = MazeModel {id, maze};
 
-            world.write_model(@map);
+            world.write_model(@new_maze);
         }
 
         fn spawn(ref self: ContractState) {
@@ -185,18 +187,11 @@ fn TeleportPosition(mut position: Position, x_value: u32, y_value: u32) -> Posit
     position
 }
 
-fn GenerateGrid(w: u8, h: u8) -> GridModel{
-    let width = w;
-    let height = h;
+fn GenerateMaze() -> felt252{
+    let width = 8;
+    let height = 8;
     let order = 0;
     let seed = 'SEED';
-    let id = 0;
-    // let maze_map = MapTrait::new_maze(width, height, order, seed);
-    GridModel {
-        id,
-        width,
-        height,
-        order,
-        seed,
-    }
+    let maze_map = Mazer::generate(width, height, order, seed);
+    maze_map
 }

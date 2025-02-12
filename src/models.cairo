@@ -13,15 +13,23 @@ pub struct Moves {
     pub can_move: bool,
 }
 
+// #[derive(Drop, Serde, Copy)]
+// #[dojo::model]
+// pub struct GridModel { //Grid will be used to generate maze and then the map
+//     #[key]
+//     pub id: u8,
+//     pub height: u8,
+//     pub width: u8,
+//     pub order: felt252,
+//     pub seed: felt252,
+// }
+
 #[derive(Drop, Serde, Copy)]
 #[dojo::model]
-pub struct GridModel {
+pub struct MazeModel {
     #[key]
-    pub id: u8,
-    pub height: u8,
-    pub width: u8,
-    pub order: felt252,
-    pub seed: felt252,
+    pub id: felt252,
+    pub maze: felt252,
 }
 
 #[derive(Drop, Serde, Debug)]
