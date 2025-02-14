@@ -9,7 +9,7 @@ trait IActions<T> {
     fn move(ref self: T, direction: Direction);
     fn flash(ref self: T, direction: Direction);
     fn teleport(ref self: T, x_value: u32, y_value: u32);
-    fn generate_maze(ref self: T);
+    fn generate_maze(ref self: T, width: u8, height: u8);
 }
 
 // dojo decorator
@@ -32,11 +32,11 @@ pub mod actions {
 
     #[abi(embed_v0)]
     impl ActionsImpl of IActions<ContractState> {
-        fn generate_maze(ref self: ContractState){
+        fn generate_maze(ref self: ContractState, width: u8, height: u8){
             let mut world = self.world_default();
             let id = 1;
-            let maze = GenerateMaze();
-            let new_maze = MazeModel {id, maze};
+            let maze = GenerateMaze(width, height);
+            let new_maze = MazeModel {id, width, height, maze};
 
             world.write_model(@new_maze);
         }
@@ -187,11 +187,48 @@ fn TeleportPosition(mut position: Position, x_value: u32, y_value: u32) -> Posit
     position
 }
 
-fn GenerateMaze() -> felt252{
-    let width = 8;
-    let height = 8;
+fn GenerateMaze(width: u8, height: u8) -> felt252{
+    let w = width;
+    let h = height;
     let order = 0;
     let seed = 'SEED';
-    let maze_map = Mazer::generate(width, height, order, seed);
+    let maze_map = Mazer::generate(w, h, order, seed);
     maze_map
 }
+
+// fn felt252_to_bit_array(value: felt252) -> Array<u8> {
+//     let mut bits = ArrayTrait::new();
+//     let mut num = value;
+
+//     let mut i = 0;
+//     loop {
+//         if i == 252 {
+//             break;
+//         }
+
+//         let bit = num % 2;
+//         bits.append(bit.into()); 
+//         num = num / 2;
+//         i += 1;
+//     }
+//     bits
+// }
+
+// fn check_collision_with_wall(ref self: ContractState) -> bool{
+//     let mut world = self.world_default();
+
+//     let player = get_caller_address();
+
+//     let player_position: Position = world.read_model(player);
+
+//     let maze: MazeModel = world.read_model(1);
+
+//     let bit_maze = felt252_to_bit_array(maze.maze);
+
+//     if(bit_maze[player.vec.x * maze.width + player.vec.y] == 0){
+//         return 1;
+//     } else {
+//         return 0;
+//     }
+
+// }

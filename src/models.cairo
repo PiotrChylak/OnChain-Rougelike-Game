@@ -29,6 +29,8 @@ pub struct Moves {
 pub struct MazeModel {
     #[key]
     pub id: felt252,
+    pub width: u8,
+    pub height: u8,
     pub maze: felt252,
 }
 
