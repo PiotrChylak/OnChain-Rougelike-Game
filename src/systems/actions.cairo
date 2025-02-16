@@ -1,6 +1,7 @@
-use dojo_starter::models::{Direction, Position};
+use dojo_starter::models::{Direction, Position, MazeModel};
 use origami_map::map::Map;
 use origami_map::generators::mazer::Mazer;
+use starknet::{ContractAddress};
 
 // define the interface
 #[starknet::interface]
@@ -15,7 +16,7 @@ trait IActions<T> {
 // dojo decorator
 #[dojo::contract]
 pub mod actions {
-    use super::{IActions, Direction, Position, NextPosition, FlashPosition, TeleportPosition, GenerateMaze};
+    use super::{IActions, Direction, Position, NextPosition, FlashPosition, TeleportPosition, GenerateMaze, check_collision_with_wall};
     use starknet::{ContractAddress, get_caller_address};
     use dojo_starter::models::{Vec2, Moves, DirectionsAvailable, MazeModel};
 
@@ -72,7 +73,6 @@ pub mod actions {
         // Implementation of the move function for the ContractState struct.
         fn move(ref self: ContractState, direction: Direction) {
             // Get the address of the current caller, possibly the player's address.
-
             let mut world = self.world_default();
 
             let player = get_caller_address();
@@ -81,23 +81,28 @@ pub mod actions {
             let position: Position = world.read_model(player);
             let mut moves: Moves = world.read_model(player);
 
-            // Deduct one from the player's remaining moves.
-            moves.remaining -= 1;
-
             // Update the last direction the player moved in.
             moves.last_direction = direction;
 
             // Calculate the player's next position based on the provided direction.
             let next = NextPosition(position, direction);
 
-            // Write the new position to the world.
-            world.write_model(@next);
+            if(!check_collision_with_wall(next.vec.x, next.vec.y, world.read_model(1))){
+                // Deduct one from the player's remaining moves.
+                moves.remaining -= 1;
+                
+                // Write the new position to the world.
+                world.write_model(@next);
 
-            // Write the new moves to the world.
-            world.write_model(@moves);
+                // Write the new moves to the world.
+                world.write_model(@moves);
 
-            // Emit an event to the world to notify about the player's move.
-            world.emit_event(@Moved { player, direction });
+                // Emit an event to the world to notify about the player's move.
+                world.emit_event(@Moved { player, direction });
+            }
+        
+        //TODO information that you cant move here emitet as event, meaby do event model when informations like that will be stored.
+        
         }
 
 
@@ -196,39 +201,32 @@ fn GenerateMaze(width: u8, height: u8) -> felt252{
     maze_map
 }
 
-// fn felt252_to_bit_array(value: felt252) -> Array<u8> {
-//     let mut bits = ArrayTrait::new();
-//     let mut num = value;
+fn felt252_to_bit_array(value: felt252) -> Array<u8> {
+    let mut bits = ArrayTrait::new();
+    let mut num: u256 = value.try_into().expect('Invalid value');
 
-//     let mut i = 0;
-//     loop {
-//         if i == 252 {
-//             break;
-//         }
+    let mut i = 0;
+    loop {
+        if i == 252 {
+            break;
+        }
 
-//         let bit = num % 2;
-//         bits.append(bit.into()); 
-//         num = num / 2;
-//         i += 1;
-//     }
-//     bits
-// }
+        let bit = num % 2;
+        bits.append(bit.try_into().unwrap()); 
+        num = num / 2;
+        i += 1;
+    };
+    bits
+}
 
-// fn check_collision_with_wall(ref self: ContractState) -> bool{
-//     let mut world = self.world_default();
+fn check_collision_with_wall(player_x: u32, player_y: u32, maze: MazeModel) -> bool{
+    let bit_maze = felt252_to_bit_array(maze.maze);
+    let mut maze_width: u32 = maze.width.try_into().expect('Invalid value');
 
-//     let player = get_caller_address();
+    if(*(bit_maze[player_x + maze_width * player_y]) == 0){
+        return true;
+    } else {
+        return false;
+    }
 
-//     let player_position: Position = world.read_model(player);
-
-//     let maze: MazeModel = world.read_model(1);
-
-//     let bit_maze = felt252_to_bit_array(maze.maze);
-
-//     if(bit_maze[player.vec.x * maze.width + player.vec.y] == 0){
-//         return 1;
-//     } else {
-//         return 0;
-//     }
-
-// }
+}

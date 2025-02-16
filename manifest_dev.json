@@ -1243,8 +1243,8 @@
   },
   "contracts": [
     {
-      "address": "0x7c71e877e5dd5a0555d2056810711f5b099ebda2717f39625366f130d96a5cd",
-      "class_hash": "0x83269eb083de65de33b65320138eb69b01463604809494880726a8ba4ea88a",
+      "address": "0x48979e443e2b8f25c3de6d026ea8e1d26bd70458d09068e33fb5e04c46b8706",
+      "class_hash": "0x2761f6de4b312993209b7dd2387f585b9fcd89a4fe5078403e49ce5a63bb653",
       "abi": [
         {
           "type": "impl",
@@ -1380,7 +1380,7 @@
             },
             {
               "type": "function",
-              "name": "generate_grid",
+              "name": "generate_maze",
               "inputs": [
                 {
                   "name": "width",
@@ -1391,13 +1391,6 @@
                   "type": "core::integer::u8"
                 }
               ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "generate_maze",
-              "inputs": [],
               "outputs": [],
               "state_mutability": "external"
             }
@@ -1526,7 +1519,6 @@
         "move",
         "flash",
         "teleport",
-        "generate_grid",
         "generate_maze",
         "upgrade"
       ]
@@ -1541,13 +1533,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x2889598f71ffc389eb90c3bb0ab671ac3ab8785f59c60ff2bf4c56d70b3a2c9",
-      "tag": "dojo_starter-GridModel",
-      "selector": "0x337d5d6b9ea98196111561e1dc28c8e01ecfc0690520cd772c1d198eb99b80e"
-    },
-    {
-      "members": [],
-      "class_hash": "0x2cb87c9be5d9743d2b77cb180ee8797cff12706b998df7bda49d3dc663c5aef",
+      "class_hash": "0x7898f347813e48875e291e48b02f3725e4ceb787421e63d118f2559980ad8a6",
       "tag": "dojo_starter-MazeModel",
       "selector": "0x51b4e14d2926cb1ba0225d6d2f03f6fd2bd3ec2d48b4a64b739869a7463970b"
     },
