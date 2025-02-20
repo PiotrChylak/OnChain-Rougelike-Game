@@ -16,7 +16,7 @@ trait IActions<T> {
 // dojo decorator
 #[dojo::contract]
 pub mod actions {
-    use super::{IActions, Direction, Position, NextPosition, FlashPosition, TeleportPosition, GenerateMaze, check_collision_with_wall};
+    use super::{IActions, Direction, Position, NextPosition, FlashPosition, TeleportPosition, GenerateMaze, check_collision_with_wall, felt252_to_bit_array};
     use starknet::{ContractAddress, get_caller_address};
     use dojo_starter::models::{Vec2, Moves, DirectionsAvailable, MazeModel};
 
@@ -37,7 +37,10 @@ pub mod actions {
             let mut world = self.world_default();
             let id = 1;
             let maze = GenerateMaze(width, height);
-            let new_maze = MazeModel {id, width, height, maze};
+            let bit_maze = felt252_to_bit_array(maze, width, height);
+            
+            let new_maze = MazeModel {id, width, height, bit_maze};
+
 
             world.write_model(@new_maze);
         }
@@ -192,6 +195,8 @@ fn TeleportPosition(mut position: Position, x_value: u32, y_value: u32) -> Posit
     position
 }
 
+//TODO maze is generated with 1 less width than expected and i have to fix that
+
 fn GenerateMaze(width: u8, height: u8) -> felt252{
     let w = width;
     let h = height;
@@ -201,13 +206,13 @@ fn GenerateMaze(width: u8, height: u8) -> felt252{
     maze_map
 }
 
-fn felt252_to_bit_array(value: felt252) -> Array<u8> {
+fn felt252_to_bit_array(value: felt252, width: u8, height: u8) -> Array<u8> { //For now maze is max 15x16 or 16x15
     let mut bits = ArrayTrait::new();
     let mut num: u256 = value.try_into().expect('Invalid value');
 
     let mut i = 0;
     loop {
-        if i == 252 {
+        if i == width * height {
             break;
         }
 
@@ -219,14 +224,16 @@ fn felt252_to_bit_array(value: felt252) -> Array<u8> {
     bits
 }
 
+
+
+
 fn check_collision_with_wall(player_x: u32, player_y: u32, maze: MazeModel) -> bool{
-    let bit_maze = felt252_to_bit_array(maze.maze);
+    let bit_maze = maze.bit_maze;
     let mut maze_width: u32 = maze.width.try_into().expect('Invalid value');
 
-    if(*(bit_maze[player_x + maze_width * player_y]) == 0){
+    if(*(bit_maze[player_x + (maze_width * player_y)]) == 0){
         return true;
     } else {
         return false;
     }
-
 }

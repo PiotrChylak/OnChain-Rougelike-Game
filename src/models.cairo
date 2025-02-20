@@ -24,14 +24,15 @@ pub struct Moves {
 //     pub seed: felt252,
 // }
 
-#[derive(Drop, Serde, Copy)]
+#[derive(Drop, Serde)]
 #[dojo::model]
 pub struct MazeModel {
     #[key]
     pub id: felt252,
     pub width: u8,
     pub height: u8,
-    pub maze: felt252,
+    //pub maze: felt252,
+    pub bit_maze: Array<u8>,
 }
 
 #[derive(Drop, Serde, Debug)]
